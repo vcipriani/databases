@@ -25,38 +25,55 @@ var messages = {
 
 var users = {
   get: function() {},
-  post: function(userName, callback) {
-    var insertQueryString = 'INSERT INTO users (name) VALUES (?);';
-    users.getUserId(userName, function(err, results) {
-      checkErr(err, callback);
-      if (results) {
-        callback(null, 'thats already in here man!');
-      } else {
-        db.query(insertQueryString, [userName], function(err, results) {
-          if (err) {
-            callback(err, null);
-          }
-          callback(null, 'user added to db.');
-        });
-      }
-    });
-  },
-
-  getUserId: function(userName, callback) {
-    var queryString = 'SELECT id FROM users WHERE name = ?;';
-    db.query(queryString, [userName], function(err, results) {
-      checkErr(err, callback)        
-      if (results.length > 0) {
-        callback(null, results[0].id);
-      } else {
-        callback(null, null);
-      }
-    });
+  post: function(roomName, callback) {
+    insert('users', roomName, callback);
   }
 };
 
-module.exports.messages = messages;
-module.exports.users = {
-  get: users.get,
-  post: users.post
+var rooms = {
+  get: function() {},
+  post: function(roomName, callback) {
+    insert('rooms', roomName, callback);
+  }
 };
+
+var insert = function(table, name, callback) {
+  var insertQueryString = 'INSERT INTO ' + table + ' (name) VALUES (?);';
+  getId(table, name, function(err, results) {
+    checkErr(err, callback);
+    if (results) {
+      callback(null, {
+        id: results,
+        status: name + ' found'
+      });
+    } else {
+      db.query(insertQueryString, [name], function(err, results) {
+        if (err) {
+          callback(err, null);
+        }
+        callback(null, {
+          id: results.insertId,
+          status: name + ' added'
+        });
+      });
+    }
+  });
+};
+
+var getId = function(table, name, callback) {
+  var queryString = 'SELECT id FROM ' + table + ' WHERE name = ?;';
+  db.query(queryString, [name], function(err, results) {
+    checkErr(err, callback);
+    if (results.length > 0) {
+      callback(null, results[0].id);
+    } else {
+      callback(null, null);
+    }
+  });
+};
+
+
+
+module.exports.messages = messages;
+module.exports.rooms = rooms;
+module.exports.users = users;
