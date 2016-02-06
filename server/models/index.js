@@ -4,10 +4,19 @@ var _ = require('underscore');
 
 
 var messages = {
-  get: function() {}, // a function which produces all the messages
+  get: function(callback) {
+    // ???????????????????????????????????????????????????????????????????????????????????
+    var queryString = 'SELECT m.*, r.name as roomname FROM messages m inner join rooms r on r.id=m.id_room;';
+    db.query(queryString, [], function(err, results) {
+      checkErr(err, callback);
+      if (results.length > 0) {
+        callback(null, results);
+      } else {
+        callback(null, null);
+      }
+    });
+  }, // a function which produces all the messages
   post: function(message, callback) {
-
-    // var insertQueryString = 'INSERT INTO messages (text, id_user, id_room) VALUES (?,?,?);';
     insertOrGetExisting('users', {
       name: message.username
     }, function(err, results) {
@@ -28,7 +37,7 @@ var messages = {
             insert('messages', insertObj, function(err, result) {
               checkErr(err, callback);
               if (result) {
-                callback(null, 'Message Inserted!!!!!!!!!!!');
+                callback(null, insertObj);
               }
             });
           }
