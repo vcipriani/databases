@@ -1,29 +1,16 @@
 var models = require('../models');
-var db = require('../db');
+
+
 
 module.exports = {
   messages: {
     get: function (req, res) {
+      models.messages.get(req, res);
       res.end('the end (users get)');      
     }, // a function which handles a get request for all messages
     post: function (req, res) {
-      // db.connect();
-      // var queryString = 'SELECT name FROM messages WHERE name = \'' + req.body.username + '\';';
-      // var insertQueryString = 'INSERT INTO users (name) VALUES (\'' + req.body.username + '\');';
-      // console.log(insertQueryString);
-      // var queryArgs = []; //['?','?','?','?','?'];
-      // db.query(queryString, queryArgs, function(err, results) {
-      //   if (results.length > 0) {
-      //     res.end('thats already in here man!');
-      //     db.end();
-      //   } else {
-      //     db.query(insertQueryString, queryArgs, function(err, results) {
-      //       res.end('added the thing for you!');
-      //       db.end();
-      //     });
-      //   }
-      // });
-    } // a function which handles posting a message to the database
+      res.end('thats all folks!');
+    } 
   },
 
   users: {
@@ -32,22 +19,9 @@ module.exports = {
       res.end('the end (users get)');      
     },
     post: function (req, res) {
-      // open connection
-      db.connect();
-      var queryString = 'SELECT name FROM users WHERE name = \'' + req.body.username + '\';';
-      var insertQueryString = 'INSERT INTO users (name) VALUES (\'' + req.body.username + '\');';
-      console.log(insertQueryString);
-      var queryArgs = []; //['?','?','?','?','?'];
-      db.query(queryString, queryArgs, function(err, results) {
-        if (results.length > 0) {
-          res.end('thats already in here man!');
-          db.end();
-        } else {
-          db.query(insertQueryString, queryArgs, function(err, results) {
-            res.end('added the thing for you!');
-            db.end();
-          });
-        }
+      models.users.post(req.body.username, function(err, result) {
+        if (err) { throw Error(err); }
+        res.end(result);
       });
     }
   }
