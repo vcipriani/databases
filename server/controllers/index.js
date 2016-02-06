@@ -9,12 +9,12 @@ module.exports = {
       res.end('the end (users get)');
     }, // a function which handles a get request for all messages
     post: function(req, res) {
-      console.log('req.body: ', req.body);
+
       models.messages.post(req.body, function(err, result) {
         if (err) {
           console.log(err);
         }
-        res.end(result);
+        res.send(result);
       });
     }
   },
@@ -25,11 +25,12 @@ module.exports = {
       res.end('the end (users get)');
     },
     post: function(req, res) {
+      console.log('req.body.username: ', req.body.username);
       models.users.post(req.body.username, function(err, result) {
         if (err) {
-          throw Error(err);
+          console.log(err);
         }
-        res.end(result);
+        res.send(result);
       });
     }
   }
