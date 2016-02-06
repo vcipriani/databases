@@ -4,23 +4,31 @@ var models = require('../models');
 
 module.exports = {
   messages: {
-    get: function (req, res) {
+    get: function(req, res) {
       models.messages.get(req, res);
-      res.end('the end (users get)');      
+      res.end('the end (users get)');
     }, // a function which handles a get request for all messages
-    post: function (req, res) {
-      res.end('thats all folks!');
-    } 
+    post: function(req, res) {
+      console.log('req.body: ', req.body);
+      models.messages.post(req.body, function(err, result) {
+        if (err) {
+          console.log(err);
+        }
+        res.end(result);
+      });
+    }
   },
 
   users: {
     // Ditto as above
-    get: function (req, res) {
-      res.end('the end (users get)');      
+    get: function(req, res) {
+      res.end('the end (users get)');
     },
-    post: function (req, res) {
+    post: function(req, res) {
       models.users.post(req.body.username, function(err, result) {
-        if (err) { throw Error(err); }
+        if (err) {
+          throw Error(err);
+        }
         res.end(result);
       });
     }
@@ -46,4 +54,4 @@ module.exports = {
 // var addUser = function(name){
 //   // add the user
 //   // return userId
-// }; 
+// }; (text, id_user, id_name)
