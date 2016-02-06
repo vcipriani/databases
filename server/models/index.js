@@ -2,62 +2,92 @@ var db = require('../db');
 var Promise = require('bluebird');
 var _ = require('underscore');
 
-var checkErr = function(err, callback) {
-  if (err) {
-    callback(err, null);
-  }
-  return err;
-};
 
 var messages = {
   get: function() {}, // a function which produces all the messages
   post: function(message, callback) {
 
-    var insertQueryString = 'INSERT INTO messages (text, id_user, id_room) VALUES (?,?,?);';
-    var queryArgs = [message.message, 1, 1];
-    console.log(insertQueryString);
-    db.query(insertQueryString, queryArgs, function(err, results) {
-      checkErr(err, callback);
-      callback(null, 'message inserted!');
+    // var insertQueryString = 'INSERT INTO messages (text, id_user, id_room) VALUES (?,?,?);';
+    insertOrGetExisting('users', {
+      name: message.username
+    }, function(err, results) {
+      checkErr(err, console.log);
+      if (results) {
+        var userId = results.id;
+        insertOrGetExisting('rooms', {
+          name: message.roomname
+        }, function(err, results) {
+          checkErr(err, console.log);
+          var roomId = results.id;
+          if (results) {
+            var insertObj = {
+              text: message.message,
+              id_user: userId,
+              id_room: roomId
+            };
+            insert('messages', insertObj, function(err, result) {
+              checkErr(err, callback);
+              if (result) {
+                callback(null, 'Message Inserted!!!!!!!!!!!');
+              }
+            });
+          }
+        });
+      }
     });
   }
 };
 
 var users = {
-  get: function() {},
-  post: function(roomName, callback) {
-    insert('users', roomName, callback);
+  get: function(userName, callback) {},
+  post: function(userName, callback) {
+    insertOrGetExisting('users', {
+      name: userName
+    }, callback);
   }
 };
 
 var rooms = {
   get: function() {},
   post: function(roomName, callback) {
-    insert('rooms', roomName, callback);
+    insertOrGetExisting('rooms', {
+      name: roomName
+    }, callback);
   }
 };
 
-var insert = function(table, name, callback) {
-  var insertQueryString = 'INSERT INTO ' + table + ' (name) VALUES (?);';
-  getId(table, name, function(err, results) {
+var insertOrGetExisting = function(table, propObj, callback) {
+  getId(table, propObj.name, function(err, results) {
     checkErr(err, callback);
     if (results) {
       callback(null, {
         id: results,
-        status: name + ' found'
+        status: JSON.stringify(propObj) + ' found'
       });
     } else {
-      db.query(insertQueryString, [name], function(err, results) {
-        if (err) {
-          callback(err, null);
-        }
-        callback(null, {
-          id: results.insertId,
-          status: name + ' added'
-        });
-      });
+      insert(table, propObj, callback);
     }
   });
+};
+
+var insert = function(table, propObj, callback) {
+  var insertQueryString = 'INSERT INTO ' + table + ' SET ?;';
+  db.query(insertQueryString, propObj, function(err, results) {
+    if (err) {
+      callback(err, null);
+    }
+    callback(null, {
+      id: results.insertId,
+      status: JSON.stringify(propObj) + ' added'
+    });
+  });
+};
+
+var checkErr = function(err, callback) {
+  if (err) {
+    callback(err, null);
+  }
+  return err;
 };
 
 var getId = function(table, name, callback) {
