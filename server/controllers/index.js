@@ -9,12 +9,10 @@ module.exports = {
         if (err) {
           console.log(err);
         }
-        // some array of messages
-        res.send(result);
+        res.status(200).send(result);
       });
     },
     post: function(req, res) {
-
       models.messages.post(req.body, function(err, result) {
         if (err) {
           console.log(err);

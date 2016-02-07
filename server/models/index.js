@@ -5,8 +5,7 @@ var _ = require('underscore');
 
 var messages = {
   get: function(callback) {
-    // ???????????????????????????????????????????????????????????????????????????????????
-    var queryString = 'SELECT m.*, r.name as roomname FROM messages m inner join rooms r on r.id=m.id_room;';
+    var queryString = 'SELECT m.id, m.text, r.name as roomname, u.name as username FROM messages m inner join rooms r on r.id=m.id_room inner join users u on u.id=m.id_user;';
     db.query(queryString, [], function(err, results) {
       checkErr(err, callback);
       if (results.length > 0) {
@@ -30,7 +29,7 @@ var messages = {
           var roomId = results.id;
           if (results) {
             var insertObj = {
-              text: message.message,
+              text: message.text,
               id_user: userId,
               id_room: roomId
             };

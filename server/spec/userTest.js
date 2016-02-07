@@ -1,16 +1,16 @@
 var models = require('../models');
 
-models.users.post('bowser', function(err, result) {
-  console.log(err, result);
-});
+// models.users.post('bowser', function(err, result) {
+//   console.log(err, result);
+// });
 
-models.rooms.post('castle', function(err, result) {
-  console.log(err, result);
-});
+// models.rooms.post('castle', function(err, result) {
+//   console.log(err, result);
+// });
 
 var message = {
-  message: 'hellow!',
-  username: 'mario',
+  message: 'king in the castle',
+  username: 'borat',
   roomname: 'castle'
 };
 
