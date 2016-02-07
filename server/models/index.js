@@ -5,43 +5,65 @@ var _ = require('underscore');
 
 var messages = {
   get: function(callback) {
-    var queryString = 'SELECT m.id, m.text, r.name as roomname, u.name as username FROM messages m inner join rooms r on r.id=m.id_room inner join users u on u.id=m.id_user;';
-    db.query(queryString, [], function(err, results) {
-      checkErr(err, callback);
-      if (results.length > 0) {
-        callback(null, results);
-      } else {
-        callback(null, null);
-      }
+    // var queryString = 'SELECT m.id, m.text, r.name as roomname, u.name as username FROM messages m inner join rooms r on r.id=m.id_room inner join users u on u.id=m.id_user;';
+    // db.query(queryString, [], function(err, results) {
+    //   checkErr(err, callback);
+    //   if (results.length > 0) {
+    //     callback(null, results);
+    //   } else {
+    //     callback(null, null);
+    //   }
+    // });
+    // var query = {
+    //   where: {
+    //     name: userName
+    //   }
+    // };
+    db.Message.findAll().spread(function(messages) {
+      console.log('23?')
+      callback(messages[0]);
     });
+      // .findOrCreate(query)
+      // .spread(function(user) { //, created) {
+      //   callback(null, user);
+      // });
   }, // a function which produces all the messages
   post: function(message, callback) {
-    insertOrGetExisting('users', {
-      name: message.username
-    }, function(err, results) {
-      checkErr(err, console.log);
-      if (results) {
-        var userId = results.id;
-        insertOrGetExisting('rooms', {
-          name: message.roomname
-        }, function(err, results) {
-          checkErr(err, console.log);
-          var roomId = results.id;
-          if (results) {
-            var insertObj = {
-              text: message.text,
-              id_user: userId,
-              id_room: roomId
-            };
-            insert('messages', insertObj, function(err, result) {
-              checkErr(err, callback);
-              if (result) {
-                callback(null, insertObj);
-              }
-            });
-          }
-        });
+    var userQuery = {
+      where: {
+        name: message.username
       }
+    };
+
+    var roomQuery = {
+      where: {
+        name: message.roomname
+      }
+    };
+
+    var userPromise = db.User
+      .findOrCreate(userQuery)
+      .spread(function(user) {
+        return user;
+        // return new Promise(user);
+      });
+
+    var roomPromise = db.Room
+      .findOrCreate(roomQuery)
+      .spread(function(room) {
+        return room;
+        // return new Promise(room);
+      });
+
+    Promise.all([userPromise, roomPromise])
+    .then(function(valuesArray) {
+      db.Message
+      .build({
+        text: message.message,
+        id_user: valuesArray[0].id,
+        id_room: valuesArray[1].id
+      })
+      .save();
     });
   }
 };
@@ -49,18 +71,32 @@ var messages = {
 var users = {
   get: function(userName, callback) {},
   post: function(userName, callback) {
-    insertOrGetExisting('users', {
-      name: userName
-    }, callback);
+    var query = {
+      where: {
+        name: userName
+      }
+    };
+    db.User
+      .findOrCreate(query)
+      .spread(function(user) { //, created) {
+        callback(null, user);
+      });
   }
 };
 
 var rooms = {
   get: function() {},
   post: function(roomName, callback) {
-    insertOrGetExisting('rooms', {
-      name: roomName
-    }, callback);
+    var query = {
+      where: {
+        name: roomName
+      }
+    };
+    db.Room
+      .findOrCreate(query)
+      .spread(function(room) { //, created) {
+        callback(null, room);
+      });
   }
 };
 
